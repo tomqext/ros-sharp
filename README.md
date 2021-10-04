@@ -1,3 +1,27 @@
+# ROS# Extend Robotics fork
+
+Fork compatible with il2cpp builds.
+
+Branches:
+- `extend` - default branch, Extend Robotics changes
+- `master` - kept in sync with original [ros-sharp](https://github.com/Extend-Robotics/ros-sharp) repository
+
+## Dependencies
+
+In your project using ROS# add to `Packages/manifest.json` in `"dependencies"` section
+
+`"com.unity.nuget.newtonsoft-json": "2.0.0"`
+
+`Packages/manifest.json` file:
+```json
+{
+  "dependencies": {
+    "com.unity.nuget.newtonsoft-json": "2.0.0",
+	... // here would be other dependencies
+  }
+}
+```
+
 # [<img src="https://github.com/siemens/ros-sharp/wiki/img/Home_RosSharpLogo.png" width="480" alt ="ROS#"/>](https://github.com/siemens/ros-sharp) #
 
 [ROS#](https://github.com/siemens/ros-sharp) is a set of open source software libraries and tools in [C\# ](https://docs.microsoft.com/de-de/dotnet/csharp/csharp) for communicating with [ROS](http://www.ros.org/) from .[NET](https://www.microsoft.com/net) applications, in particular [Unity](https://unity3d.com/).
