@@ -17,15 +17,22 @@ limitations under the License.
 // UoK , 2019, Odysseas Doumas (od79@kent.ac.uk / odydoum@gmail.com)
 
 using UnityEngine;
+using System.Threading;
 
 namespace RosSharp.RosBridgeClient
 {
     public class PoseStampedPublisher : UnityPublisher<MessageTypes.Geometry.PoseStamped>
     {
+        public RosConnector connect;
         public Transform PublishedTransform;
         public string FrameId = "Unity";
 
         private MessageTypes.Geometry.PoseStamped message;
+
+        /*NSXX ++ */
+        private int reconnection = 0;
+        private static ManualResetEvent test = new ManualResetEvent(false);
+        /*NSXX -- */
 
         protected override void Start()
         {
@@ -35,6 +42,20 @@ namespace RosSharp.RosBridgeClient
 
         private void FixedUpdate()
         {
+            /*NSXX ++*/
+            if (connect.connection_reset == true)
+            {
+                reconnection = 1;
+                test.WaitOne(1000);
+                //StartCoroutine(Wait_Reconnect(2000.0f));
+                FixedUpdate();
+            }
+            if (reconnection == 1)
+            {
+                reconnection = 0;
+                Start();
+            }
+            /*NSXX --*/
             UpdateMessage();
         }
 

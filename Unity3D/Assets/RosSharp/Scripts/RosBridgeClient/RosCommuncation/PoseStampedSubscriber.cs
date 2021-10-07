@@ -20,24 +20,43 @@ namespace RosSharp.RosBridgeClient
     public class PoseStampedSubscriber : UnitySubscriber<MessageTypes.Geometry.PoseStamped>
     {
         public Transform PublishedTransform;
-
+        public RosConnector connect;
         private Vector3 position;
+        private Vector3 position_ros;
         private Quaternion rotation;
+        private Quaternion rotation_ros;
         private bool isMessageReceived;
+        private int reconnection = 0;
+
+        public Transform CanRosFrame;
 
         protected override void Start()
         {
-			base.Start();
-		}
-		
+            base.Start();
+        }
+
         private void Update()
         {
+            /*NSXX ++*/
+            if (connect.connection_reset == true)
+            {
+                reconnection = 1;
+                return;
+            }
+            if (reconnection == 1)
+            {
+                reconnection = 0;
+                Start();
+            }
+            /*NSXX --*/
             if (isMessageReceived)
                 ProcessMessage();
         }
 
         protected override void ReceiveMessage(MessageTypes.Geometry.PoseStamped message)
         {
+            position_ros = GetPositionROS(message);
+            rotation_ros = GetRotationROS(message);
             position = GetPosition(message).Ros2Unity();
             rotation = GetRotation(message).Ros2Unity();
             isMessageReceived = true;
@@ -45,8 +64,11 @@ namespace RosSharp.RosBridgeClient
 
         private void ProcessMessage()
         {
-            PublishedTransform.position = position;
-            PublishedTransform.rotation = rotation;
+            PublishedTransform.localPosition = position;
+            PublishedTransform.localRotation = rotation;
+            CanRosFrame.localPosition = position_ros;
+            CanRosFrame.localRotation = rotation_ros;
+
         }
 
         private Vector3 GetPosition(MessageTypes.Geometry.PoseStamped message)
@@ -58,6 +80,21 @@ namespace RosSharp.RosBridgeClient
         }
 
         private Quaternion GetRotation(MessageTypes.Geometry.PoseStamped message)
+        {
+            return new Quaternion(
+                (float)message.pose.orientation.x,
+                (float)message.pose.orientation.y,
+                (float)message.pose.orientation.z,
+                (float)message.pose.orientation.w);
+        }
+        private Vector3 GetPositionROS(MessageTypes.Geometry.PoseStamped message)
+        {
+            return new Vector3(
+                (float)message.pose.position.x,
+                (float)message.pose.position.y,
+                (float)message.pose.position.z);
+        }
+        private Quaternion GetRotationROS(MessageTypes.Geometry.PoseStamped message)
         {
             return new Quaternion(
                 (float)message.pose.orientation.x,

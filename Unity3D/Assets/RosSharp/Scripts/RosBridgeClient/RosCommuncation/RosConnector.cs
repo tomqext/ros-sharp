@@ -16,9 +16,11 @@ limitations under the License.
 */
 
 using System;
+using System.Collections;
 using System.Threading;
 using RosSharp.RosBridgeClient.Protocols;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace RosSharp.RosBridgeClient
 {
@@ -29,11 +31,25 @@ namespace RosSharp.RosBridgeClient
         public RosSocket RosSocket { get; private set; }
         public RosSocket.SerializerEnum Serializer;
         public Protocol protocol;
-        public string RosBridgeServerUrl = "ws://192.168.0.1:9090";
+        [FormerlySerializedAs("RosBridgeServerUrl")] public string IPAddress = "ws://192.168.0.1:9090";
 
         public ManualResetEvent IsConnected { get; private set; }
 
-        public virtual void Awake()
+        public bool connection_reset = false;   /*NSXX*/
+        private static ManualResetEvent tester = new ManualResetEvent(false);
+
+        public bool ros_connected = false;      /*NSXX*/
+        public bool ros_unavail = false;        /*NSXX*/
+
+        //public UIInteractionManager _uimanager;
+
+        private void Awake()
+        {
+            Connect();
+        }
+
+
+        public void Connect()
         {
             IsConnected = new ManualResetEvent(false);
             new Thread(ConnectAndWait).Start();
@@ -41,14 +57,22 @@ namespace RosSharp.RosBridgeClient
 
         protected void ConnectAndWait()
         {
-            RosSocket = ConnectToRos(protocol, RosBridgeServerUrl, OnConnected, OnClosed, Serializer);
+            ros_connected = false;      /*NSXX*/
+            ros_unavail = false;        /*NSXX*/
+            RosSocket = ConnectToRos(protocol, IPAddress, OnConnected, OnClosed, Serializer);
 
             if (!IsConnected.WaitOne(SecondsTimeout * 1000))
-                Debug.LogWarning("Failed to connect to RosBridge at: " + RosBridgeServerUrl);
+            {
+                connection_reset = false;
+                ros_unavail = true;
+                Debug.LogWarning("Failed to connect to RosBridge at: " + IPAddress);
+            }
+
         }
 
         public static RosSocket ConnectToRos(Protocol protocolType, string serverUrl, EventHandler onConnected = null, EventHandler onClosed = null, RosSocket.SerializerEnum serializer = RosSocket.SerializerEnum.Microsoft)
         {
+            tester.WaitOne(1000);
             IProtocol protocol = ProtocolInitializer.GetProtocol(protocolType, serverUrl);
             protocol.OnConnected += onConnected;
             protocol.OnClosed += onClosed;
@@ -56,21 +80,61 @@ namespace RosSharp.RosBridgeClient
             return new RosSocket(protocol, serializer);
         }
 
-        private void OnApplicationQuit()
+        IEnumerator Co_Reconnect()
+        {
+            if (_activeConnection)
+            {
+                Close();
+                while (_activeConnection)
+                {
+                    yield return null;
+                }
+            }
+            Connect();
+        }
+        [ContextMenu("Reconnect")]
+        public void Reconnect()
+        {
+            connection_reset = true;
+            protocol = new Protocol();
+            IsConnected.Reset();
+            _activeConnection = false;
+            RosSocket.Close();
+            StartCoroutine(Co_Reconnect());
+        }
+
+
+        public void Close()
         {
             RosSocket.Close();
         }
 
+
+        private void OnApplicationQuit()
+        {
+            Close();
+        }
+
+        private bool _activeConnection;
+        //public event Action Connected;
+
         private void OnConnected(object sender, EventArgs e)
         {
             IsConnected.Set();
-            Debug.Log("Connected to RosBridge: " + RosBridgeServerUrl);
+            _activeConnection = true;
+            connection_reset = false;
+            ros_connected = true;
+            Debug.Log("Connected to RosBridge: " + IPAddress);
+            //Connected?.Invoke();
+           // _uimanager.Connected();
         }
 
         private void OnClosed(object sender, EventArgs e)
         {
             IsConnected.Reset();
-            Debug.Log("Disconnected from RosBridge: " + RosBridgeServerUrl);
+            ros_connected = false;
+            _activeConnection = false;
+            Debug.Log("Disconnected from RosBridge: " + IPAddress);
         }
     }
 }
