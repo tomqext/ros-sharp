@@ -38,8 +38,8 @@ namespace RosSharp.RosBridgeClient
         public bool connection_reset = false;   /*NSXX*/
         private static ManualResetEvent tester = new ManualResetEvent(false);
 
-        public bool ros_connected = false;      /*NSXX*/
-        public bool ros_unavail = false;        /*NSXX*/
+        public volatile bool ros_connected = false;      /*NSXX*/
+        public volatile bool ros_unavail = false;        /*NSXX*/
 
         //public UIInteractionManager _uimanager;
 
