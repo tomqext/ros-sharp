@@ -114,7 +114,7 @@ namespace RosSharp.RosBridgeClient
 
         public void Close()
         {
-            if(RosSocket != null)
+            if (RosSocket != null)
             {
                 RosSocket.Close();
             }
@@ -162,5 +162,4 @@ namespace RosSharp.RosBridgeClient
     }
 
 }
-
 
