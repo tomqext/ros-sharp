@@ -190,3 +190,16 @@ include_directories(
 add_executable(file_server src/file_server.cpp)
 target_link_libraries(file_server ${catkin_LIBRARIES})
 add_dependencies(file_server file_server_gencpp)
+
+install(TARGETS
+  file_server
+  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
+
+install(DIRECTORY launch
+  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
+)
+
+install(DIRECTORY rviz
+  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
+)
