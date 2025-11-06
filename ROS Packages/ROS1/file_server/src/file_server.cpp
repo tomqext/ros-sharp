@@ -29,7 +29,7 @@ bool get_file(
 	// analyse request:
 	if (req.name.compare(0,10,"package://")!=0)
 	{
-		ROS_INFO("only \"package://\" addresses allowed.");
+		ROS_INFO_STREAM("only \"package://\" addresses allowed. req.name was: " << req.name);
 		return true;
 	}	
 	std::string address = req.name.substr(10);
@@ -112,7 +112,7 @@ bool save_file(
 {
 	if (req.name.compare(0,10,"package://")!=0)
 	{
-		ROS_INFO("only \"package://\" addresses allowed.");
+                ROS_INFO_STREAM("only \"package://\" addresses allowed. req.name was: " << req.name);
 		return true;
 	}
 	std::string address = req.name.substr(10);
