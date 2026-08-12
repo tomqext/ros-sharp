@@ -101,7 +101,7 @@ generate_messages(
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
 #  INCLUDE_DIRS include
-  LIBRARIES file_services
+#  LIBRARIES file_services  # never built on this branch (add_library is commented out); a dangling export breaks ros1_bridge pairing
   CATKIN_DEPENDS roscpp rospy std_msgs roslib
   DEPENDS message_runtime
 )
